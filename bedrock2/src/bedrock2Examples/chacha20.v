@@ -292,9 +292,13 @@ Proof.
           repeat intro_let;
           try do_refl ]
       | intro_let ].
+    Ltac straightline_cleanup_clear ::= fail.
+    (*Ltac cbn_interp_binop ::= fail.*)
     Set Ltac Profiling. Reset Ltac Profile.
     Time do 100 straightline.
     Show Ltac Profile.
+    HERE
+    Time repeat straightline_subst.
     HERE
     Time repeat straightline.
     Time unshelve (repeat (repeat straightline_subst; straightline_set; [ shelve | intro_let ])); shelve_unifiable; [ .. | shelve ].
