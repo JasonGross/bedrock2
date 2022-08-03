@@ -293,7 +293,7 @@ Proof.
           try do_refl ]
       | intro_let ].
     Ltac straightline_cleanup_clear ::= fail.
-    (*Ltac cbn_interp_binop ::= fail.*)
+    Ltac cbn_interp_binop ::= fail.
     Set Ltac Profiling. Reset Ltac Profile.
     Time do 100 straightline.
     Show Ltac Profile.
