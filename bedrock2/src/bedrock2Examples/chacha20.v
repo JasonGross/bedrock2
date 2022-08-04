@@ -123,6 +123,637 @@ Hint Rewrite
   : word_laws.
 
 Import BasicC64Semantics. (* for ring *)
+Notation "( x , y , .. , z )" := (PrimitivePair.pair.mk .. (PrimitivePair.pair.mk x y) .. z) : core_scope.
+    Notation "'dlet' x .. y := v 'in' f" := (dlet.dlet v (fun x => .. (fun y => f) .. ))
+                                              (at level 200, x binder, y binder, f at level 200, format "'dlet'  x .. y  :=  v  'in' '//' f").
+
+    Import NotationsCustomEntry.
+Goal   forall
+    functions : list
+                  (prod string
+                     (prod (prod (list string) (list string)) Syntax.cmd.cmd)),
+  let c := bedrock_func_body:(
+      $"x4" = $(Syntax.expr.var "x4") ^ $(Syntax.expr.var "x8");
+      $"x4" = $(Syntax.expr.var "x4") << $(Syntax.expr.literal 7)) in
+  let c0 := bedrock_func_body:(
+      $"x8" = $(Syntax.expr.var "x8") + $(Syntax.expr.var "x12");
+      $c) in
+  let c1 := bedrock_func_body:(
+      $"x12" = $(Syntax.expr.var "x12") << $(Syntax.expr.literal 8);
+      $c0) in
+  let c2 := bedrock_func_body:(
+      $"x12" = $(Syntax.expr.var "x12") ^ $(Syntax.expr.var "x0");
+      $c1) in
+  let c3 := bedrock_func_body:(
+      $"x0" = $(Syntax.expr.var "x0") + $(Syntax.expr.var "x4");
+      $c2) in
+  let c4 := bedrock_func_body:(
+      $"x4" = $(Syntax.expr.var "x4") << $(Syntax.expr.literal 12);
+      $c3) in
+  let c5 := bedrock_func_body:(
+      $"x4" = $(Syntax.expr.var "x4") ^ $(Syntax.expr.var "x8");
+      $c4) in
+  let c6 := bedrock_func_body:(
+      $"x8" = $(Syntax.expr.var "x8") + $(Syntax.expr.var "x12");
+      $c5) in
+  let c7 := bedrock_func_body:(
+      $"x12" = $(Syntax.expr.var "x12") << $(Syntax.expr.literal 16);
+      $c6) in
+  let c8 := bedrock_func_body:(
+      $"x12" = $(Syntax.expr.var "x12") ^ $(Syntax.expr.var "x0");
+      $c7) in
+  let c9 := bedrock_func_body:(
+      $"x0" = $(Syntax.expr.var "x0") + $(Syntax.expr.var "x4");
+      $c8) in
+  let c10 := bedrock_func_body:(
+      $"x5" = $(Syntax.expr.var "x5") ^ $(Syntax.expr.var "x9");
+      $"x5" = $(Syntax.expr.var "x5") << $(Syntax.expr.literal 7)) in
+  let c11 := bedrock_func_body:(
+      $"x9" = $(Syntax.expr.var "x9") + $(Syntax.expr.var "x13");
+      $c10) in
+  let c12 := bedrock_func_body:(
+      $"x13" = $(Syntax.expr.var "x13") << $(Syntax.expr.literal 8);
+      $c11) in
+  let c13 := bedrock_func_body:(
+      $"x13" = $(Syntax.expr.var "x13") ^ $(Syntax.expr.var "x1");
+      $c12) in
+  let c14 := bedrock_func_body:(
+      $"x1" = $(Syntax.expr.var "x1") + $(Syntax.expr.var "x5");
+      $c13) in
+  let c15 := bedrock_func_body:(
+      $"x5" = $(Syntax.expr.var "x5") << $(Syntax.expr.literal 12);
+      $c14) in
+  let c16 := bedrock_func_body:(
+      $"x5" = $(Syntax.expr.var "x5") ^ $(Syntax.expr.var "x9");
+      $c15) in
+  let c17 := bedrock_func_body:(
+      $"x9" = $(Syntax.expr.var "x9") + $(Syntax.expr.var "x13");
+      $c16) in
+  let c18 := bedrock_func_body:(
+      $"x13" = $(Syntax.expr.var "x13") << $(Syntax.expr.literal 16);
+      $c17) in
+  let c19 := bedrock_func_body:(
+      $"x13" = $(Syntax.expr.var "x13") ^ $(Syntax.expr.var "x1");
+      $c18) in
+  let c20 := bedrock_func_body:(
+      $"x1" = $(Syntax.expr.var "x1") + $(Syntax.expr.var "x5");
+      $c19) in
+  let c21 := bedrock_func_body:(
+      $"x6" = $(Syntax.expr.var "x6") ^ $(Syntax.expr.var "x10");
+      $"x6" = $(Syntax.expr.var "x6") << $(Syntax.expr.literal 7)) in
+  let c22 := bedrock_func_body:(
+      $"x10" = $(Syntax.expr.var "x10") + $(Syntax.expr.var "x14");
+      $c21) in
+  let c23 := bedrock_func_body:(
+      $"x14" = $(Syntax.expr.var "x14") << $(Syntax.expr.literal 8);
+      $c22) in
+  let c24 := bedrock_func_body:(
+      $"x14" = $(Syntax.expr.var "x14") ^ $(Syntax.expr.var "x2");
+      $c23) in
+  let c25 := bedrock_func_body:(
+      $"x2" = $(Syntax.expr.var "x2") + $(Syntax.expr.var "x6");
+      $c24) in
+  let c26 := bedrock_func_body:(
+      $"x6" = $(Syntax.expr.var "x6") << $(Syntax.expr.literal 12);
+      $c25) in
+  let c27 := bedrock_func_body:(
+      $"x6" = $(Syntax.expr.var "x6") ^ $(Syntax.expr.var "x10");
+      $c26) in
+  let c28 := bedrock_func_body:(
+      $"x10" = $(Syntax.expr.var "x10") + $(Syntax.expr.var "x14");
+      $c27) in
+  let c29 := bedrock_func_body:(
+      $"x14" = $(Syntax.expr.var "x14") << $(Syntax.expr.literal 16);
+      $c28) in
+  let c30 := bedrock_func_body:(
+      $"x14" = $(Syntax.expr.var "x14") ^ $(Syntax.expr.var "x2");
+      $c29) in
+  let c31 := bedrock_func_body:(
+      $"x2" = $(Syntax.expr.var "x2") + $(Syntax.expr.var "x6");
+      $c30) in
+  let c32 := bedrock_func_body:(
+      $"x7" = $(Syntax.expr.var "x7") ^ $(Syntax.expr.var "x11");
+      $"x7" = $(Syntax.expr.var "x7") << $(Syntax.expr.literal 7)) in
+  let c33 := bedrock_func_body:(
+      $"x11" = $(Syntax.expr.var "x11") + $(Syntax.expr.var "x15");
+      $c32) in
+  let c34 := bedrock_func_body:(
+      $"x15" = $(Syntax.expr.var "x15") << $(Syntax.expr.literal 8);
+      $c33) in
+  let c35 := bedrock_func_body:(
+      $"x15" = $(Syntax.expr.var "x15") ^ $(Syntax.expr.var "x3");
+      $c34) in
+  let c36 := bedrock_func_body:(
+      $"x3" = $(Syntax.expr.var "x3") + $(Syntax.expr.var "x7");
+      $c35) in
+  let c37 := bedrock_func_body:(
+      $"x7" = $(Syntax.expr.var "x7") << $(Syntax.expr.literal 12);
+      $c36) in
+  let c38 := bedrock_func_body:(
+      $"x7" = $(Syntax.expr.var "x7") ^ $(Syntax.expr.var "x11");
+      $c37) in
+  let c39 := bedrock_func_body:(
+      $"x11" = $(Syntax.expr.var "x11") + $(Syntax.expr.var "x15");
+      $c38) in
+  let c40 := bedrock_func_body:(
+      $"x15" = $(Syntax.expr.var "x15") << $(Syntax.expr.literal 16);
+      $c39) in
+  let c41 := bedrock_func_body:(
+      $"x15" = $(Syntax.expr.var "x15") ^ $(Syntax.expr.var "x3");
+      $c40) in
+  let c42 := bedrock_func_body:(
+      $"x3" = $(Syntax.expr.var "x3") + $(Syntax.expr.var "x7");
+      $c41) in
+  let c43 := bedrock_func_body:(
+      $"x5" = $(Syntax.expr.var "x5") ^ $(Syntax.expr.var "x10");
+      $"x5" = $(Syntax.expr.var "x5") << $(Syntax.expr.literal 7)) in
+  let c44 := bedrock_func_body:(
+      $"x10" = $(Syntax.expr.var "x10") + $(Syntax.expr.var "x15");
+      $c43) in
+  let c45 := bedrock_func_body:(
+      $"x15" = $(Syntax.expr.var "x15") << $(Syntax.expr.literal 8);
+      $c44) in
+  let c46 := bedrock_func_body:(
+      $"x15" = $(Syntax.expr.var "x15") ^ $(Syntax.expr.var "x0");
+      $c45) in
+  let c47 := bedrock_func_body:(
+      $"x0" = $(Syntax.expr.var "x0") + $(Syntax.expr.var "x5");
+      $c46) in
+  let c48 := bedrock_func_body:(
+      $"x5" = $(Syntax.expr.var "x5") << $(Syntax.expr.literal 12);
+      $c47) in
+  let c49 := bedrock_func_body:(
+      $"x5" = $(Syntax.expr.var "x5") ^ $(Syntax.expr.var "x10");
+      $c48) in
+  let c50 := bedrock_func_body:(
+      $"x10" = $(Syntax.expr.var "x10") + $(Syntax.expr.var "x15");
+      $c49) in
+  let c51 := bedrock_func_body:(
+      $"x15" = $(Syntax.expr.var "x15") << $(Syntax.expr.literal 16);
+      $c50) in
+  let c52 := bedrock_func_body:(
+      $"x15" = $(Syntax.expr.var "x15") ^ $(Syntax.expr.var "x0");
+      $c51) in
+  let c53 := bedrock_func_body:(
+      $"x0" = $(Syntax.expr.var "x0") + $(Syntax.expr.var "x5");
+      $c52) in
+  let c54 := bedrock_func_body:(
+      $"x6" = $(Syntax.expr.var "x6") ^ $(Syntax.expr.var "x11");
+      $"x6" = $(Syntax.expr.var "x6") << $(Syntax.expr.literal 7)) in
+  let c55 := bedrock_func_body:(
+      $"x11" = $(Syntax.expr.var "x11") + $(Syntax.expr.var "x12");
+      $c54) in
+  let c56 := bedrock_func_body:(
+      $"x12" = $(Syntax.expr.var "x12") << $(Syntax.expr.literal 8);
+      $c55) in
+  let c57 := bedrock_func_body:(
+      $"x12" = $(Syntax.expr.var "x12") ^ $(Syntax.expr.var "x1");
+      $c56) in
+  let c58 := bedrock_func_body:(
+      $"x1" = $(Syntax.expr.var "x1") + $(Syntax.expr.var "x6");
+      $c57) in
+  let c59 := bedrock_func_body:(
+      $"x6" = $(Syntax.expr.var "x6") << $(Syntax.expr.literal 12);
+      $c58) in
+  let c60 := bedrock_func_body:(
+      $"x6" = $(Syntax.expr.var "x6") ^ $(Syntax.expr.var "x11");
+      $c59) in
+  let c61 := bedrock_func_body:(
+      $"x11" = $(Syntax.expr.var "x11") + $(Syntax.expr.var "x12");
+      $c60) in
+  let c62 := bedrock_func_body:(
+      $"x12" = $(Syntax.expr.var "x12") << $(Syntax.expr.literal 16);
+      $c61) in
+  let c63 := bedrock_func_body:(
+      $"x12" = $(Syntax.expr.var "x12") ^ $(Syntax.expr.var "x1");
+      $c62) in
+  let c64 := bedrock_func_body:(
+      $"x1" = $(Syntax.expr.var "x1") + $(Syntax.expr.var "x6");
+      $c63) in
+  let c65 := bedrock_func_body:(
+      $"x7" = $(Syntax.expr.var "x7") ^ $(Syntax.expr.var "x8");
+      $"x7" = $(Syntax.expr.var "x7") << $(Syntax.expr.literal 7)) in
+  let c66 := bedrock_func_body:(
+      $"x8" = $(Syntax.expr.var "x8") + $(Syntax.expr.var "x13");
+      $c65) in
+  let c67 := bedrock_func_body:(
+      $"x13" = $(Syntax.expr.var "x13") << $(Syntax.expr.literal 8);
+      $c66) in
+  let c68 := bedrock_func_body:(
+      $"x13" = $(Syntax.expr.var "x13") ^ $(Syntax.expr.var "x2");
+      $c67) in
+  let c69 := bedrock_func_body:(
+      $"x2" = $(Syntax.expr.var "x2") + $(Syntax.expr.var "x7");
+      $c68) in
+  let c70 := bedrock_func_body:(
+      $"x7" = $(Syntax.expr.var "x7") << $(Syntax.expr.literal 12);
+      $c69) in
+  let c71 := bedrock_func_body:(
+      $"x7" = $(Syntax.expr.var "x7") ^ $(Syntax.expr.var "x8");
+      $c70) in
+  let c72 := bedrock_func_body:(
+      $"x8" = $(Syntax.expr.var "x8") + $(Syntax.expr.var "x13");
+      $c71) in
+  let c73 := bedrock_func_body:(
+      $"x13" = $(Syntax.expr.var "x13") << $(Syntax.expr.literal 16);
+      $c72) in
+  let c74 := bedrock_func_body:(
+      $"x13" = $(Syntax.expr.var "x13") ^ $(Syntax.expr.var "x2");
+      $c73) in
+  let c75 := bedrock_func_body:(
+      $"x2" = $(Syntax.expr.var "x2") + $(Syntax.expr.var "x7");
+      $c74) in
+  let c76 := bedrock_func_body:(
+      $"x4" = $(Syntax.expr.var "x4") ^ $(Syntax.expr.var "x9");
+      $"x4" = $(Syntax.expr.var "x4") << $(Syntax.expr.literal 7)) in
+  let c77 := bedrock_func_body:(
+      $"x9" = $(Syntax.expr.var "x9") + $(Syntax.expr.var "x14");
+      $c76) in
+  let c78 := bedrock_func_body:(
+      $"x14" = $(Syntax.expr.var "x14") << $(Syntax.expr.literal 8);
+      $c77) in
+  let c79 := bedrock_func_body:(
+      $"x14" = $(Syntax.expr.var "x14") ^ $(Syntax.expr.var "x3");
+      $c78) in
+  let c80 := bedrock_func_body:(
+      $"x3" = $(Syntax.expr.var "x3") + $(Syntax.expr.var "x4");
+      $c79) in
+  let c81 := bedrock_func_body:(
+      $"x4" = $(Syntax.expr.var "x4") << $(Syntax.expr.literal 12);
+      $c80) in
+  let c82 := bedrock_func_body:(
+      $"x4" = $(Syntax.expr.var "x4") ^ $(Syntax.expr.var "x9");
+      $c81) in
+  let c83 := bedrock_func_body:(
+      $"x9" = $(Syntax.expr.var "x9") + $(Syntax.expr.var "x14");
+      $c82) in
+  let c84 := bedrock_func_body:(
+      $"x14" = $(Syntax.expr.var "x14") << $(Syntax.expr.literal 16);
+      $c83) in
+  let c85 := bedrock_func_body:(
+      $"x14" = $(Syntax.expr.var "x14") ^ $(Syntax.expr.var "x3");
+      $c84) in
+  let c86 := bedrock_func_body:(
+      $"x3" = $(Syntax.expr.var "x3") + $(Syntax.expr.var "x4");
+      $c85) in
+  let c87 := bedrock_func_body:($c75;
+                                $c86) in
+  let c88 := bedrock_func_body:($c64;
+                                $c87) in
+  let c89 := bedrock_func_body:($c53;
+                                $c88) in
+  let c90 := bedrock_func_body:($c42;
+                                $c89) in
+  let c91 := bedrock_func_body:($c31;
+                                $c90) in
+  let c92 := bedrock_func_body:($c20;
+                                $c91) in
+  let c93 := bedrock_func_body:($c9;
+                                $c92) in
+  let c94 := bedrock_func_body:(
+      $"i" = $(Syntax.expr.var "i") + $(Syntax.expr.literal 1);
+      $c93) in
+  forall
+    (outAddr r r0 r1 r2 r3 r4 r5 r6 r7 r8 r9 r10 r11 r12 r13
+     r14 : @word.rep 64 word) (out : list (@word.rep 64 word))
+    (keyAddr r15 r16 r17 r18 r19 r20 r21 r22 : @word.rep 64 word)
+    (key : list (@word.rep 64 word)) (nonceAddr r23 r24 r25 : @word.rep 64 word)
+    (nonce : list (@word.rep 64 word)),
+  @word.rep 64 word ->
+  forall (R : @map.rep (@word.rep 64 word) Init.Byte.byte mem -> Prop)
+    (m : @map.rep (@word.rep 64 word) Init.Byte.byte mem),
+  ((@scalar32 64 word mem outAddr r *
+    (@scalar32 64 word mem (@word.add 64 word outAddr (@word.of_Z 64 word 4)) r0 *
+     (@scalar32 64 word mem (@word.add 64 word outAddr (@word.of_Z 64 word 8)) r1 *
+      (@scalar32 64 word mem (@word.add 64 word outAddr (@word.of_Z 64 word 12)) r2 *
+       (@scalar32 64 word mem (@word.add 64 word outAddr (@word.of_Z 64 word 16))
+          r3 *
+        (@scalar32 64 word mem (@word.add 64 word outAddr (@word.of_Z 64 word 20))
+           r4 *
+         (@scalar32 64 word mem (@word.add 64 word outAddr (@word.of_Z 64 word 24))
+            r5 *
+          (@scalar32 64 word mem
+             (@word.add 64 word outAddr (@word.of_Z 64 word 28)) r6 *
+           (@scalar32 64 word mem
+              (@word.add 64 word outAddr (@word.of_Z 64 word 32)) r7 *
+            (@scalar32 64 word mem
+               (@word.add 64 word outAddr (@word.of_Z 64 word 36)) r8 *
+             (@scalar32 64 word mem
+                (@word.add 64 word outAddr (@word.of_Z 64 word 40)) r9 *
+              (@scalar32 64 word mem
+                 (@word.add 64 word outAddr (@word.of_Z 64 word 44)) r10 *
+               (@scalar32 64 word mem
+                  (@word.add 64 word outAddr (@word.of_Z 64 word 48)) r11 *
+                (@scalar32 64 word mem
+                   (@word.add 64 word outAddr (@word.of_Z 64 word 52)) r12 *
+                 (@scalar32 64 word mem
+                    (@word.add 64 word outAddr (@word.of_Z 64 word 56)) r13 *
+                  (@scalar32 64 word mem
+                     (@word.add 64 word outAddr (@word.of_Z 64 word 60)) r14 *
+                   @array 64 word Init.Byte.byte mem (@word.rep 64 word)
+                     (@scalar32 64 word mem) (@word.of_Z 64 word 4)
+                     (@word.add 64 word outAddr (@word.of_Z 64 word 64)) out))))))))))))))) *
+    (@scalar32 64 word mem keyAddr r15 *
+     (@scalar32 64 word mem (@word.add 64 word keyAddr (@word.of_Z 64 word 4)) r16 *
+      (@scalar32 64 word mem (@word.add 64 word keyAddr (@word.of_Z 64 word 8)) r17 *
+       (@scalar32 64 word mem (@word.add 64 word keyAddr (@word.of_Z 64 word 12))
+          r18 *
+        (@scalar32 64 word mem (@word.add 64 word keyAddr (@word.of_Z 64 word 16))
+           r19 *
+         (@scalar32 64 word mem (@word.add 64 word keyAddr (@word.of_Z 64 word 20))
+            r20 *
+          (@scalar32 64 word mem
+             (@word.add 64 word keyAddr (@word.of_Z 64 word 24)) r21 *
+           (@scalar32 64 word mem
+              (@word.add 64 word keyAddr (@word.of_Z 64 word 28)) r22 *
+            @array 64 word Init.Byte.byte mem (@word.rep 64 word)
+              (@scalar32 64 word mem) (@word.of_Z 64 word 4)
+              (@word.add 64 word keyAddr (@word.of_Z 64 word 32)) key)))))))) *
+    (@scalar32 64 word mem nonceAddr r23 *
+     (@scalar32 64 word mem (@word.add 64 word nonceAddr (@word.of_Z 64 word 4))
+        r24 *
+      (@scalar32 64 word mem (@word.add 64 word nonceAddr (@word.of_Z 64 word 8))
+         r25 *
+       @array 64 word Init.Byte.byte mem (@word.rep 64 word)
+         (@scalar32 64 word mem) (@word.of_Z 64 word 4)
+         (@word.add 64 word nonceAddr (@word.of_Z 64 word 12)) nonce))))%type * R)
+    m ->
+  16 =
+  Z.of_nat
+    (S
+       (S
+          (S
+             (S
+                (S
+                   (S
+                      (S
+                         (S
+                            (S
+                               (S
+                                  (S
+                                     (S
+                                        (S
+                                           (S
+                                              (S
+                                                 (S
+                                                    (@Datatypes.length
+                                                      (@word.rep 64 word) out))))))))))))))))) ->
+  8 =
+  Z.of_nat
+    (S (S (S (S (S (S (S (S (@Datatypes.length (@word.rep 64 word) key))))))))) ->
+  3 = Z.of_nat (S (S (S (@Datatypes.length (@word.rep 64 word) nonce)))) ->
+  let x0 := @word.of_Z 64 word 1634760805 in
+  let x1 := @word.of_Z 64 word 857760878 in
+  let x2 := @word.of_Z 64 word 2036477234 in
+  let x3 := @word.of_Z 64 word 1797285236 in
+  let x4 := @truncate_word 64 word Syntax.access_size.four r15 in
+  let x5 := @truncate_word 64 word Syntax.access_size.four r16 in
+  let x6 := @truncate_word 64 word Syntax.access_size.four r17 in
+  let x7 := @truncate_word 64 word Syntax.access_size.four r18 in
+  let x8 := @truncate_word 64 word Syntax.access_size.four r19 in
+  let x9 := @truncate_word 64 word Syntax.access_size.four r20 in
+  let x10 := @truncate_word 64 word Syntax.access_size.four r21 in
+  let x11 := @truncate_word 64 word Syntax.access_size.four r22 in
+  let x13 := @truncate_word 64 word Syntax.access_size.four r23 in
+  let x14 := @truncate_word 64 word Syntax.access_size.four r24 in
+  let x15 := @truncate_word 64 word Syntax.access_size.four r25 in
+  let i := @word.of_Z 64 word 0 in
+  let Hsep :=
+    (@scalar32 64 word mem outAddr r *
+     (@scalar32 64 word mem (@word.add 64 word outAddr (@word.of_Z 64 word 4)) r0 *
+      (@scalar32 64 word mem (@word.add 64 word outAddr (@word.of_Z 64 word 8)) r1 *
+       (@scalar32 64 word mem (@word.add 64 word outAddr (@word.of_Z 64 word 12))
+          r2 *
+        (@scalar32 64 word mem (@word.add 64 word outAddr (@word.of_Z 64 word 16))
+           r3 *
+         (@scalar32 64 word mem (@word.add 64 word outAddr (@word.of_Z 64 word 20))
+            r4 *
+          (@scalar32 64 word mem
+             (@word.add 64 word outAddr (@word.of_Z 64 word 24)) r5 *
+           (@scalar32 64 word mem
+              (@word.add 64 word outAddr (@word.of_Z 64 word 28)) r6 *
+            (@scalar32 64 word mem
+               (@word.add 64 word outAddr (@word.of_Z 64 word 32)) r7 *
+             (@scalar32 64 word mem
+                (@word.add 64 word outAddr (@word.of_Z 64 word 36)) r8 *
+              (@scalar32 64 word mem
+                 (@word.add 64 word outAddr (@word.of_Z 64 word 40)) r9 *
+               (@scalar32 64 word mem
+                  (@word.add 64 word outAddr (@word.of_Z 64 word 44)) r10 *
+                (@scalar32 64 word mem
+                   (@word.add 64 word outAddr (@word.of_Z 64 word 48)) r11 *
+                 (@scalar32 64 word mem
+                    (@word.add 64 word outAddr (@word.of_Z 64 word 52)) r12 *
+                  (@scalar32 64 word mem
+                     (@word.add 64 word outAddr (@word.of_Z 64 word 56)) r13 *
+                   (@scalar32 64 word mem
+                      (@word.add 64 word outAddr (@word.of_Z 64 word 60)) r14 *
+                    @array 64 word Init.Byte.byte mem (@word.rep 64 word)
+                      (@scalar32 64 word mem) (@word.of_Z 64 word 4)
+                      (@word.add 64 word outAddr (@word.of_Z 64 word 64)) out))))))))))))))) *
+     (@scalar32 64 word mem keyAddr r15 *
+      (@scalar32 64 word mem (@word.add 64 word keyAddr (@word.of_Z 64 word 4)) r16 *
+       (@scalar32 64 word mem (@word.add 64 word keyAddr (@word.of_Z 64 word 8))
+          r17 *
+        (@scalar32 64 word mem (@word.add 64 word keyAddr (@word.of_Z 64 word 12))
+           r18 *
+         (@scalar32 64 word mem (@word.add 64 word keyAddr (@word.of_Z 64 word 16))
+            r19 *
+          (@scalar32 64 word mem
+             (@word.add 64 word keyAddr (@word.of_Z 64 word 20)) r20 *
+           (@scalar32 64 word mem
+              (@word.add 64 word keyAddr (@word.of_Z 64 word 24)) r21 *
+            (@scalar32 64 word mem
+               (@word.add 64 word keyAddr (@word.of_Z 64 word 28)) r22 *
+             @array 64 word Init.Byte.byte mem (@word.rep 64 word)
+               (@scalar32 64 word mem) (@word.of_Z 64 word 4)
+               (@word.add 64 word keyAddr (@word.of_Z 64 word 32)) key)))))))) *
+     (@scalar32 64 word mem nonceAddr r23 *
+      (@scalar32 64 word mem (@word.add 64 word nonceAddr (@word.of_Z 64 word 4))
+         r24 *
+       (@scalar32 64 word mem (@word.add 64 word nonceAddr (@word.of_Z 64 word 8))
+          r25 *
+        @array 64 word Init.Byte.byte mem (@word.rep 64 word)
+          (@scalar32 64 word mem) (@word.of_Z 64 word 4)
+          (@word.add 64 word nonceAddr (@word.of_Z 64 word 12)) nonce))) * R)%type
+    in
+  forall (v : nat) (t : @trace 64 Bitwidth64.BW64 word mem)
+    (m0 : @map.rep (@word.rep 64 word) Init.Byte.byte mem)
+    (x x12 x16 x17 x18 x19 x20 x21 x22 x23 x24 x25 x26 x27 x28 x29 x30 x31 x32 x33
+     x34 : @word.rep 64 word),
+  let localsmap :=
+    @reconstruct 64 word locals
+      ["i"; "out"; "key"; "nonce"; "countervalue"; "x0"; "x1"; "x2"; "x3"; "x4";
+      "x5"; "x6"; "x7"; "x8"; "x9"; "x10"; "x11"; "x12"; "x13"; "x14"; "x15"]
+      (x,
+      (x12,
+      (x16,
+      (x17,
+      (x18,
+      (x19,
+      (x20,
+      (x21,
+      (x22,
+      (x23,
+      (x24,
+      (x25, (x26, (x27, (x28, (x29, (x30, (x31, (x32, (x33, (x34, tt)))))))))))))))))))))
+    in
+  Hsep m0 ->
+  @word.unsigned 64 word x = 10 - Z.of_nat v ->
+  (v <= 10)%nat ->
+  let br :=
+    if @word.ltu 64 word x (@word.of_Z 64 word 10)
+    then @word.of_Z 64 word 1
+    else @word.of_Z 64 word 0 in
+  @word.unsigned 64 word br <> 0 ->
+  @cmd 64 Bitwidth64.BW64 word mem locals ext_spec
+    (@call 64 Bitwidth64.BW64 word mem locals ext_spec functions) c94 t m0
+    localsmap
+    (fun (t' : @trace 64 Bitwidth64.BW64 word mem)
+       (m' : @map.rep (@word.rep 64 word) Init.Byte.byte mem)
+       (localsmap' : @map.rep string (@word.rep 64 word) locals) =>
+     @Markers.unique Prop
+       (@Markers.left Prop
+          (exists
+             x35 x36 x37 x38 x39 x40 x41 x42 x43 x44 x45 x46 x47 x48 x49 x50 x51
+              x52 x53 x54 x55 : @word.rep 64 word,
+             @Markers.split Prop
+               (@enforce 64 word locals
+                  ["i"; "out"; "key"; "nonce"; "countervalue"; "x0"; "x1"; "x2";
+                  "x3"; "x4"; "x5"; "x6"; "x7"; "x8"; "x9"; "x10"; "x11"; "x12";
+                  "x13"; "x14"; "x15"]
+                  (x35,
+                  (x36,
+                  (x37,
+                  (x38,
+                  (x39,
+                  (x40,
+                  (x41,
+                  (x42,
+                  (x43,
+                  (x44,
+                  (x45,
+                  (x46,
+                  (x47, (x48, (x49, (x50, (x51, (x52, (x53, (x54, (x55, tt)))))))))))))))))))))
+                  localsmap' /\
+                @Markers.right Prop
+                  (@Markers.unique Prop
+                     (@Markers.left Prop
+                        (exists v' : nat,
+                           @Markers.split Prop
+                             ((Hsep m' /\
+                               @word.unsigned 64 word x35 = 10 - Z.of_nat v' /\
+                               (v' <= 10)%nat) /\
+                              @Markers.right Prop
+                                (@Markers.split Prop
+                                   ((v' < v)%nat /\
+                                    (forall
+                                       (T : @trace 64 Bitwidth64.BW64 word mem)
+                                       (M : @map.rep (@word.rep 64 word)
+                                              Init.Byte.byte mem),
+                                     @word.rep 64 word ->
+                                     forall x57 x58 x59 x60 : @word.rep 64 word,
+                                     @word.rep 64 word ->
+                                     @word.rep 64 word ->
+                                     @word.rep 64 word ->
+                                     @word.rep 64 word ->
+                                     @word.rep 64 word ->
+                                     @word.rep 64 word ->
+                                     @word.rep 64 word ->
+                                     @word.rep 64 word ->
+                                     @word.rep 64 word ->
+                                     @word.rep 64 word ->
+                                     @word.rep 64 word ->
+                                     @word.rep 64 word ->
+                                     @word.rep 64 word ->
+                                     @word.rep 64 word ->
+                                     @word.rep 64 word ->
+                                     @word.rep 64 word ->
+                                     T = t' /\
+                                     x57 = x36 /\
+                                     x58 = x37 /\ x59 = x38 /\ x60 = x39 /\ Hsep M ->
+                                     T = t /\
+                                     x57 = x12 /\
+                                     x58 = x16 /\ x59 = x17 /\ x60 = x18 /\ Hsep M))))))))))).
+intros.
+    repeat match goal with H : Syntax.cmd.cmd |- _ => subst H end.
+    repeat first [ match goal with
+                   | [ |- ?ev = ?v :> ?T ]
+                     => let ev' := rdelta.rdelta ev in is_evar ev'; change ev with ev'; instantiate(1:=v); reflexivity
+                   | [ |- ?x = @Some ?T ?ev ]
+                     => is_evar ev;
+                        first [ instantiate (1:=match x return match x with Some _ => T | None => unit end with
+                                                | Some v => v
+                                                | None => tt
+                                                end <: T); reflexivity
+                              | fail 3 ]
+                   end
+                 | let v :=
+                     match goal with
+                     | |- @eq _ (@map.get string (@word.rep _ _) _ _ _) (@Some _ ?v) => v
+                     end
+                   in
+                   tryif is_evar v then fail else
+                     (let v' := rdelta.rdelta v in
+                      is_evar v'; change v with v')
+                 | match goal with
+                   | [ |- exists _, _ /\ _ ] => letexists _; split
+                   | [ |- dlet x := ?y in ?f ] => change (let x := y in f); intro
+                   end
+                 | progress (unfold1_cmd_goal; cbv beta match delta [cmd_body])
+                 | progress (unfold1_expr_goal; cbv beta match delta [expr_body])
+                 | progress cbv [dexpr expr get expr_body literal]
+                 | progress cbn [interp_binop] ].
+    { lazymatch goal with
+      | [ |- ?x = @Some ?T ?ev ]
+        => is_evar ev;
+           transitivity (@Some T (match x return match x with Some _ => T | None => unit end with
+                                  | Some v => v
+                                  | None => tt
+                                  end <: T))
+      end.
+      (* Error: Conversion test raised an anomaly:
+Anomaly "File "kernel/vconv.ml", line 199, characters 18-24: Assertion failed."
+Please report at http://coq.inria.fr/bugs/.
+*)
+    (*unshelve (do 100 straightline); shelve_unifiable.
+    Optimize Proof.*)
+    all: cbn [interp_binop].
+    all: repeat first [ straightline_cleanup | straightline_unfold ].
+    straightline_split
+    | straightline_split_refl | straightline_split ].
+    straightline_
+    Time all: match goal with
+              | [ |- ?ev = ?v :> ?T ]
+                => is_evar ev; instantiate(1:=v); reflexivity
+              | _ => idtac
+end.
+    all: try let v :=
+     match goal with
+     | |- @eq _ (@map.get string (@word.rep _ _) _ _ _) (@Some _ ?v) => v
+     end
+    in
+    let v' := rdelta.rdelta v in
+    is_evar v'; change v with v'.
+    all: [ > match goal with
+             | [ |- ?x = @Some ?T ?ev ]
+               => is_evar ev;
+                  try (instantiate (1:=match x return match x with Some _ => T | None => unit end with
+                                       | Some v => v
+                                       | None => tt
+                                       end <: T); reflexivity)
+             | _ => idtac
+             end .. | ].
+    { lazymatch goal with
+      | [ |- ?x = @Some ?T ?ev ]
+        => is_evar ev;
+           transitivity (@Some T (match x return match x with Some _ => T | None => unit end with
+                                  | Some v => v
+                                  | None => tt
+                                  end <: T))
+      end.
+      | _ => idtac
+         end.
 
 Lemma chacha20_ok : program_logic_goal_for_function! chacha20_block.
 Proof.
@@ -386,6 +1017,10 @@ Proof.
       let y := rdelta.rdelta y in
       constr_eq x y; assert_succeeds refine (@eq_refl _ _); shelve ] ].
     Set Ltac Profiling. Reset Ltac Profile.
+    Set Printing Coercions.
+    Set Printing Depth 1000000000.
+    Set Printing Implicit.
+    repeat match goal with H : _ |- _ => revert H end.
     Time unshelve (do 100 straightline); shelve_unifiable.
     Reset Ltac Profile.
     Optimize Proof.
