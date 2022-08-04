@@ -388,6 +388,159 @@ Proof.
     Set Ltac Profiling. Reset Ltac Profile.
     Time unshelve (do 100 straightline); shelve_unifiable.
     Reset Ltac Profile.
+    Optimize Proof.
+    all: cbn [interp_binop].
+    Time all: match goal with
+              | [ |- ?ev = ?v :> ?T ]
+                => is_evar ev; instantiate(1:=v); reflexivity
+              | _ => idtac
+    end.
+    42: { match goal with
+                | [ |- ?x = @Some ?T ?ev ]
+                  => is_evar ev;
+                     transitivity (@Some T (match x return match x with Some _ => T | None => unit end with
+                                            | Some v => v
+                                            | None => tt
+                                            end <: T))
+      end.
+          (* Error: Conversion test raised an anomaly:
+Anomaly "File "kernel/vconv.ml", line 199, characters 18-24: Assertion failed."
+Please report at http://coq.inria.fr/bugs/.
+ *)
+              | _ => idtac
+                end .. | ].
+    1-41: give_up.
+    2-15: give_up.
+    Unshelve.
+    all: shelve_unifiable.
+    2: {
+    1: revert x2 v0.
+    2-30:match goal with
+              | [ |- ?ev = ?v :> ?T ]
+                => is_evar ev; instantiate(1:=v); reflexivity
+              | _ => idtac
+         end.
+    {
+
+    2: reflexivity.
+    2: reflexivity.
+    42: {
+    all: try let v :=
+     match goal with
+     | |- @eq _ (@map.get string (@word.rep _ _) _ _ _) (@Some _ ?v) => v
+     end
+    in
+    let v' := rdelta.rdelta v in
+    is_evar v'; change v with v'.
+    Time all: [ > match goal with
+                | [ |- ?x = @Some ?T ?ev ]
+                  => is_evar ev;
+                first [ instantiate (1:=match x return match x with Some _ => T | None => unit end with
+                                | Some v => v
+                                | None => tt
+                                        end <: T)
+                      | transitivity (@Some T (match x return match x with Some _ => T | None => unit end with
+                                | Some v => v
+                                | None => tt
+                                               end <: T))
+                                     ]
+              | _ => idtac
+                end .. | ].
+    42: { instantiate(1:=ltac:(clear -l23)).
+          revert v0.
+          clear -i.
+          move i at bottom.
+      lazymatch goal with
+                | [ |- ?x = @Some ?T ?ev ]
+                  => is_evar ev;
+                     transitivity (@Some T (match x return match x with Some _ => T | None => unit end with
+                                            | Some v => v
+                                            | None => tt
+                                            end <: T))
+      end.
+      lazymatch goal with
+                | [ |- ?x = @Some ?T ?ev ]
+                  => is_evar ev;
+                instantiate (1:=ltac:(refine (match x return match x with Some _ => T | None => unit end with
+                                | Some v => v
+                                | None => tt
+                                end <: T)))
+      end.
+              | _ => idtac
+                end
+    Time all: [ > cbv [reconstruct map.putmany_of_tuple List.length HList.tuple.of_list] in *.. | ].
+    Time 1:match goal with
+      | [ |- ?x = @Some ?T ?ev ]
+        => instantiate (1:=match x return match x with Some _ => T | None => unit end with
+                           | Some v => v
+                           | None => tt
+                           end <: T)
+           end.
+      Time reflexivity.
+    Arguments map.get / . Arguments locals / .
+    Time all: [ > cbn .. | ].
+         cbn.
+    Time all: [ > repeat match goal with H : Syntax.cmd.cmd |- _ => clear H end
+                         .. | ].
+    Time all: [ > repeat match goal with H := ?x : word.rep |- _ => tryif is_var x then subst H else clearbody H end
+                         .. | ].
+    Time all: [ > try (cbv; reflexivity) .. | ].
+
+    1: vm_compute.
+    Time all: [ > reflexivity .. | ].
+    Time all: [ > match goal with
+         | |- context G [@map.get ?K ?V ?M ?m ?k] =>
+             time "all" (idtac; let v := match goal with H := context [map.put _ k ?v] |- _ => v end in
+                                try cbv -[v]) end .. | ].
+                                let goal := context G [Some v] in
+                                time "change" change goal)
+         end .. | ].
+    all: shelve_unifiable.
+    1: reflexivity.
+    all: try let v :=
+     match goal with
+     | |- @eq _ (@map.get string (@word.rep _ _) _ _ _) (@Some _ ?v) => v
+     end
+    in
+    let v' := rdelta.rdelta v in
+    is_evar v'; change v with v'.
+    Time all: [ > lazymatch goal with
+                  | [ |- map.get ?v _ = _ ]
+                    => instantiate (1:=ltac:(clear -v)); clear -v
+              | [ |- ?ev = interp_binop _ ?v1 ?v2 ]
+                => instantiate (1:=ltac:(clear -v1 v2)); clear -v1 v2
+                end .. | ].
+    all: cbn [interp_binop].
+    Time all: match goal with
+              | [ |- ?ev = ?v :> ?T ]
+                => is_evar ev; refine (@eq_refl T v)
+              | _ => idtac
+    end.
+    Time all: shelve_unifiable.
+
+    Time all: [ > do 5 assert_succeeds reflexivity .. | ].
+    Time 1: lazymatch goal with |- @eq ?T ?x ?y => refine (@eq_refl T y) end.
+    Optimize Proof.
+    Time 1: refine eq_refl.
+    Optimize Proof.
+    Time 1: reflexivity.
+    Optimize Proof.
+    Time all: [ > do 5 assert_succeeds reflexivity .. | ]. (* Finished transaction in 28.705 secs (27.704u,1.s) (successful) *)
+    Time all: [ > do 5 assert_succeeds refine eq_refl .. | ]. (* Finished transaction in 36.655 secs (36.584u,0.069s) (successful) *)
+   Time instantiate (1:=ltac:(clear -localsmap)).
+      Time clear -localsmap.
+      Time reflexivity.
+    Time all: cbn [interp_binop].
+    Time all: [ > lazymatch goal with |- @eq ?T ?x ?y => do 5 assert_succeeds refine (@eq_refl T y) end .. | ]. (* Finished transaction in 21.849 secs (21.839u,0.009s) (successful) *)
+    Time all: [ > lazymatch goal with |- @eq ?T ?x ?y => do 5 assert_succeeds refine (@eq_refl T x) end .. | ]. (* Finished transaction in 37.437 secs (37.376u,0.06s) (successful) *)
+    Time all: [ > lazymatch goal with
+                  | [ |- @eq ?T ?x (@Some ?U ?y) ]
+                    => time "a" refine (@eq_refl T (@Some U y))
+                  | [ |- @eq ?T ?ev ?y ]
+                    => is_evar ev; time "b" refine (@eq_refl T y)
+                  | _ => idtac
+                  end .. | ].
+    Time 1: reflexivity.
     Time all: [ > refine eq_refl
                          .. | ].
     Show Ltac Profile.
