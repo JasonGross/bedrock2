@@ -1,4 +1,5 @@
 Require Import Coq.ZArith.ZArith.
+From Stdlib Require Import Zmod.
 Require Import coqutil.Word.Interface coqutil.Word.Properties.
 Require Import coqutil.Z.BitOps coqutil.Z.ZLib.
 Require Import Coq.micromega.Lia.
@@ -37,7 +38,7 @@ Section NaiveRiscvWord.
       pose proof (word.unsigned_range z) as R2.
       pose proof (Z.mod_pos_bound (word.unsigned z) (2 ^ Z.of_nat log2width)) as R3.
       rewrite Z.log2_pow2 by lia.
-      do 2 f_equal.
+      cbv [Naive.sru]. f_equal.
       change Naive.unsigned
         with (word.unsigned (word := (Naive.word (2 ^ Z.of_nat log2width)))).
       rewrite word.unsigned_of_Z_nowrap by lia.
@@ -54,7 +55,7 @@ Section NaiveRiscvWord.
       pose proof (word.unsigned_range z) as R2.
       pose proof (Z.mod_pos_bound (word.unsigned z) (2 ^ Z.of_nat log2width)) as R3.
       rewrite Z.log2_pow2 by lia.
-      do 2 f_equal.
+      cbv [Naive.slu]. f_equal.
       change Naive.unsigned
         with (word.unsigned (word := (Naive.word (2 ^ Z.of_nat log2width)))).
       rewrite word.unsigned_of_Z_nowrap by lia.
@@ -71,7 +72,7 @@ Section NaiveRiscvWord.
       pose proof (word.unsigned_range z) as R2.
       pose proof (Z.mod_pos_bound (word.unsigned z) (2 ^ Z.of_nat log2width)) as R3.
       rewrite Z.log2_pow2 by lia.
-      do 2 f_equal.
+      cbv [Naive.srs]. f_equal.
       change Naive.unsigned
         with (word.unsigned (word := (Naive.word (2 ^ Z.of_nat log2width)))).
       rewrite word.unsigned_of_Z_nowrap by lia.
@@ -85,23 +86,16 @@ Section NaiveRiscvWord.
         * exfalso. lia.
 
     - destr (word.eqb z (word.of_Z 0)); [|reflexivity].
-      change Naive.wrap with (word.of_Z (word := (Naive.word (2 ^ Z.of_nat log2width)))).
-      match goal with
-      | |- context [?x =? ?y] => destruct (Z.eqb_spec x y)
-      end.
-      + eapply word.of_Z_inj_mod. cbn.
-        rewrite <- Zminus_mod_idemp_l.
-        rewrite Z_mod_same_full.
-        reflexivity.
-      + cbn in *. exfalso. congruence.
+      (* destr already substituted z := word.of_Z 0; word.divu y 0 is Zmod.udiv y zero = opp one *)
+      cbv [word.rep word.of_Z Naive.word Naive.gen_word Naive.wrap Naive.rep Naive.divu].
+      rewrite Zmod.of_Z_0, Zmod.udiv_0_r.
+      apply Zmod.unsigned_inj.
+      rewrite Zmod.unsigned_m1_pos, Zmod.unsigned_of_Z_small; lia.
 
     - destr (word.eqb z (word.of_Z 0)); [|reflexivity].
-      change Naive.wrap with (word.of_Z (word := (Naive.word (2 ^ Z.of_nat log2width)))).
-      match goal with
-      | |- context [?x =? ?y] => destruct (Z.eqb_spec x y)
-      end.
-      + cbn. symmetry.
-        eapply (word.of_Z_unsigned (word := (Naive.word (2 ^ Z.of_nat log2width))) y).
-      + cbn in *. exfalso. congruence.
+      (* destr already substituted z := word.of_Z 0; word.modu y 0 is Zmod.umod y zero = y *)
+      cbv [word.rep word.of_Z Naive.word Naive.gen_word Naive.wrap Naive.rep Naive.modu].
+      rewrite Zmod.of_Z_0, Zmod.umod_0_r.
+      reflexivity.
   Qed.
 End NaiveRiscvWord.
