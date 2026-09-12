@@ -1,3 +1,5 @@
+(* [Zmod.unsigned]/[Zmod.signed] are used unqualified-prefix below; Kami.Lib.Word
+   only [Require Import]s Zmod, which does not re-export the [Zmod] prefix. *)
 From Stdlib Require Import Zmod.
 From Coq Require Import String.
 Require Import Coq.ZArith.ZArith.
@@ -1277,7 +1279,11 @@ Section Equiv.
     |clear; intro; discriminate
     |try (solve [trivial])
     |cbv [RiscvMachine.getNextPc];
-     try (eapply pc_related_plus4; try eassumption; red; eauto; fail)
+     (* [simple eapply]: plain [eapply] unfolds the Zmod-based word operations
+        while unifying, and on the two goals where this lemma does not apply it
+        grinds for 145 s and 13 s before failing.  [simple eapply] keeps the
+        same 37 successes and fails instantly. *)
+     try (simple eapply pc_related_plus4; try eassumption; red; eauto; fail)
     |solve [trivial]
     |try (solve [trivial]);
      try (eapply regs_related_put;

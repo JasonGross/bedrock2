@@ -15,7 +15,13 @@ Local Open Scope Z_scope.
    final [Qed] of [end2end/End2EndPipeline.v] overflows the stack.  coqutil's
    Word/Naive.v documents the same trap for its own wrappers.  [vm_compute] and
    an explicit [cbv [...]] delta list are unaffected; a bare [cbv] is not, and
-   must be avoided on goals mentioning words. *)
+   must be avoided on goals mentioning words.
+
+   These three are deliberately GLOBAL rather than [#[export]]: a global
+   [Arguments] applies on [Require], an exported one only along [Import]
+   chains, and [end2end/End2EndLightbulb.v] reaches this file only through
+   non-[Export] [Require Import] chains, so [#[export]] would silently drop
+   the declarations there and bring back the stack overflow. *)
 Arguments Zmod.unsigned : simpl never.
 Arguments Zmod.signed : simpl never.
 Arguments Zmod.of_Z : simpl never.
