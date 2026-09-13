@@ -5,6 +5,7 @@ Require Import Coq.Lists.List. Import ListNotations.
 Require Import coqutil.Z.Lia.
 
 Require Import Kami.Kami.
+Require Import Kami.Lib.WordDerived.
 Require Import Kami.Ex.MemTypes Kami.Ex.SC Kami.Ex.IsaRv32.
 Require Import Kami.Ex.SCMMInl Kami.Ex.SCMMInv.
 Require Import Kami.Ex.ProcMemCorrect.

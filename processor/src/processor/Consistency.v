@@ -3,7 +3,7 @@ Require Import Coq.ZArith.ZArith.
 Require Import coqutil.Z.Lia.
 Require Import coqutil.Byte.
 Require Import Coq.Lists.List. Import ListNotations.
-Require Import Kami.Lib.Word.
+Require Import Kami.Lib.Word Kami.Lib.WordDerived.
 Require Import Kami.Syntax Kami.Semantics.
 Require Import Kami.Ex.IsaRv32.
 Require Import coqutil.Map.Interface.
@@ -195,7 +195,7 @@ Section FetchOk.
     rewrite N.mod_small by assumption.
 
     red in H0.
-    rewrite <-(Word.combine_split 2 (nwidth - 2) rpc) in *.
+    rewrite <-(combine_split 2 (nwidth - 2) rpc) in *.
     remember (split1 2 (nwidth - 2) rpc) as rpc1; clear Heqrpc1.
     remember (split2 2 (nwidth - 2) rpc) as rpc2; clear Heqrpc2.
     rewrite split1_combine in H0; subst.

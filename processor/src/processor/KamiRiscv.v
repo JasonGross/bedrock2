@@ -2,7 +2,7 @@ From Coq Require Import String.
 Require Import Coq.ZArith.ZArith.
 Require Import coqutil.Z.Lia.
 Require Import Coq.Lists.List. Import ListNotations.
-Require Import Kami.Lib.Word.
+Require Import Kami.Lib.Word Kami.Lib.WordDerived.
 Require Import Kami.Ex.IsaRv32 riscv.Spec.Decode.
 Require Import riscv.Utility.Encode.
 Require Import coqutil.Word.LittleEndian.

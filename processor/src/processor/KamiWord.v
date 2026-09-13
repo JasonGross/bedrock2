@@ -1,6 +1,6 @@
 Require Import Coq.ZArith.ZArith Coq.ZArith.BinIntDef Coq.ZArith.BinInt coqutil.Z.Lia.
 Require Import coqutil.sanity coqutil.Tactics.forward coqutil.Word.Interface. Import word.
-Require Import Kami.Lib.Word.
+Require Import Kami.Lib.Word Kami.Lib.WordDerived.
 Require riscv.Utility.Utility.
 Require coqutil.Word.Naive.
 From coqutil Require Import destr div_mod_to_equations.
@@ -9,29 +9,11 @@ From Stdlib Require Import Zmod.
 Local Open Scope bool_scope.
 Local Open Scope Z_scope.
 
-(* [Zmod.of_Z m z] is [Zmod.mk m (if small z m then z else 0) <proof>], and the
-   proof field repeats the value expression.  So reducing through it with
-   [simpl]/[cbn] duplicates subterms at every nesting level (exponential), which
-   is fatal for the processor and end2end proofs: without these declarations the
-   final [Qed] of [end2end/End2EndPipeline.v] overflows the stack.  coqutil's
-   Word/Naive.v documents the same trap for its own wrappers.  [vm_compute] and
-   an explicit [cbv [...]] delta list are unaffected; a bare [cbv] is not, and
-   must be avoided on goals mentioning words.
-
-   These three are deliberately GLOBAL rather than [#[export]]: a global
-   [Arguments] applies on [Require], an exported one only along [Import]
-   chains, and [end2end/End2EndLightbulb.v] reaches this file only through
-   non-[Export] [Require Import] chains, so [#[export]] would silently drop
-   the declarations there and bring back the stack overflow. *)
-Arguments Zmod.unsigned : simpl never.
-Arguments Zmod.signed : simpl never.
-Arguments Zmod.of_Z : simpl never.
-
-(** [Kami.Lib.Word.word n] is the standard library's [bits (Z.of_nat n)], and every
-    Kami word operation is a [simpl never] wrapper specified through
-    [Zmod.unsigned].  So this bridge only has to transport the Kami [unsigned_*]
-    lemmas from [Zmod.unsigned] to Kami's [wordToN]/[wordToZ] spellings, which is
-    what [Z_of_wordToN] below does; nothing here computes with words. *)
+(** [Kami.Lib.Word.word n] is the standard library's [Zmod (Zpow2 n)], i.e.
+    [bits (Z.of_nat n)], and Kami's operations are the Zmod ones (with [Zmod]
+    declared [simpl never] by Kami's Word.v).  This bridge only transports the
+    standard library's [unsigned_*] lemmas to Kami's [wordToN]/[wordToZ]
+    spellings; nothing here computes with words. *)
 
 Section KamiWordFacts.
 
@@ -40,66 +22,57 @@ Section KamiWordFacts.
     intros; cbv [wordToN]; pose proof (@unsigned_range _ w); apply Z2N.id; blia.
   Qed.
 
-  (* [uwordToZ] is now [Zmod.unsigned], no longer [Z.of_N (wordToN _)] by
-     conversion, so the two spellings need this bridge. *)
   Lemma uwordToZ_kunsigned: forall sz (w: Word.word sz),
       uwordToZ w = Z.of_N (wordToN w).
   Proof. intros; symmetry; apply Z_of_wordToN. Qed.
 
   Lemma unsigned_mod_id: forall sz (w: Word.word sz),
       Zmod.unsigned w mod 2 ^ Z.of_nat sz = Zmod.unsigned w.
-  Proof. intros; apply Z.mod_small, (@unsigned_range _ w). Qed.
+  Proof. intros; rewrite <- Zpow2_eqn; apply Z.mod_small, (@unsigned_range _ w). Qed.
 
   Lemma unsigned_wnot_mod: forall sz (w: Word.word sz),
       Zmod.unsigned (wnot w) = Z.lnot (Zmod.unsigned w) mod 2 ^ Z.of_nat sz.
   Proof.
-    intros; rewrite unsigned_wnot.
-    pose proof (@unsigned_range _ w); pose proof (pow2_pos_Z sz).
+    intros; rewrite unsigned_not, <- Zpow2_eqn.
+    pose proof (@unsigned_range _ w); pose proof (Zpow2_pos sz).
     unfold Z.lnot.
     replace (Z.pred (- Zmod.unsigned w))
-      with (2 ^ Z.of_nat sz - 1 - Zmod.unsigned w + (-1) * 2 ^ Z.of_nat sz) by blia.
+      with (Zpow2 sz - 1 - Zmod.unsigned w + (-1) * Zpow2 sz) by blia.
     rewrite Z.mod_add by blia.
     rewrite Z.mod_small by blia; reflexivity.
   Qed.
 
   Lemma wrshifta_ZToWord: forall sz (w: Word.word sz) n,
       wrshifta w n = ZToWord sz (wordToZ w / 2 ^ Z.of_nat n).
-  Proof. reflexivity. Qed.
+  Proof.
+    intros; apply Zmod.unsigned_inj.
+    rewrite unsigned_wrshifta, Zmod.unsigned_of_Z, (Zpow2_eqn n); reflexivity.
+  Qed.
 
   Lemma weqb_eqb: forall sz (x y: Word.word sz),
       weqb x y = Z.eqb (Zmod.unsigned x) (Zmod.unsigned y).
-  Proof.
-    intros; cbv [weqb].
-    destruct (Zmod.eqb_spec x y) as [E|E];
-      destruct (Z.eqb_spec (Zmod.unsigned x) (Zmod.unsigned y)) as [E2|E2];
-      try reflexivity.
-    - subst; congruence.
-    - exfalso; apply E, Zmod.unsigned_inj, E2.
-  Qed.
+  Proof. reflexivity. Qed.
 
-  Lemma wordToN_split2 a b w :
+  Lemma wordToN_split2 a b (w : word (a + b)) :
     wordToN (@split2 a b w) = BinNat.N.div (wordToN w) (NatLib.Npow2 a).
   Proof.
     apply Znat.N2Z.inj.
-    rewrite Znat.N2Z.inj_div, !Z_of_wordToN, NatLib.Z_of_N_Npow2.
+    rewrite Znat.N2Z.inj_div, !Z_of_wordToN, Npow2_Z.
     apply unsigned_split2.
   Qed.
 
-  Lemma wordToN_split1 a b w :
+  Lemma wordToN_split1 a b (w : word (a + b)) :
     wordToN (@split1 a b w) = BinNat.N.modulo (wordToN w) (NatLib.Npow2 a).
   Proof.
     apply Znat.N2Z.inj.
-    rewrite Znat.N2Z.inj_mod, !Z_of_wordToN, NatLib.Z_of_N_Npow2.
+    rewrite Znat.N2Z.inj_mod, !Z_of_wordToN, Npow2_Z.
     apply unsigned_split1.
   Qed.
 
   Lemma wnot_idempotent:
     forall {sz} (w: word sz),
       wnot (wnot w) = w.
-  Proof.
-    intros; apply unsigned_inj; rewrite !unsigned_wnot.
-    pose proof (@unsigned_range _ w); blia.
-  Qed.
+  Proof. intros; apply bits.not_not. Qed.
 
   Lemma wordToN_eq_rect:
     forall sz (w: Word.word sz) nsz Hsz,
@@ -133,6 +106,7 @@ Section KamiWordFacts.
   Proof.
     intros.
     pose proof (@unsigned_range _ w1); pose proof (@unsigned_range _ w2).
+    pose proof (Zpow2_eqn sz1).
     rewrite !Z_of_wordToN, unsigned_combine, Znat.nat_N_Z.
     rewrite Z.shiftl_mul_pow2 by blia.
     rewrite (Z.mul_comm (Zmod.unsigned w2)).
@@ -141,11 +115,7 @@ Section KamiWordFacts.
 
   Lemma ZToWord_zero:
     forall n, ZToWord n 0 = wzero n.
-  Proof.
-    intros; apply unsigned_inj.
-    rewrite unsigned_ZToWord, unsigned_wzero.
-    pose proof (pow2_pos_Z n); apply Z.mod_0_l; blia.
-  Qed.
+  Proof. intros; apply Zmod.of_Z_0. Qed.
 
   Lemma split1_wplus_silent:
     forall sz1 sz2 (w1 w2: Word.word (sz1 + sz2)),
@@ -154,14 +124,14 @@ Section KamiWordFacts.
   Proof.
     intros sz1 sz2 w1 w2 H.
     apply (f_equal (@Zmod.unsigned _)) in H.
-    rewrite unsigned_split1, unsigned_wzero in H.
-    apply unsigned_inj.
-    rewrite !unsigned_split1, unsigned_wplus.
-    rewrite Z.mod_mod_divide by (exists (2 ^ Z.of_nat sz2); rewrite pow2_add_Z; ring).
+    rewrite unsigned_split1, Zmod.unsigned_0 in H.
+    apply Zmod.unsigned_inj.
+    rewrite !unsigned_split1, Zmod.unsigned_add.
+    rewrite Z.mod_mod_divide by (exists (Zpow2 sz2); rewrite Zpow2_add; ring).
     rewrite Zplus_mod, H, Z.add_0_r, Zmod_mod; reflexivity.
   Qed.
 
-  Lemma sumbool_rect_weq {T} a b n x y :
+  Lemma sumbool_rect_weq {T} (a b : T) (n : nat) (x y : word n) :
     sumbool_rect (fun _ => T) (fun _ => a) (fun _ => b) (@weq n x y) = if weqb x y then a else b.
   Proof.
     cbv [sumbool_rect].
@@ -170,17 +140,17 @@ Section KamiWordFacts.
       trivial; congruence.
   Qed.
 
-  Lemma sumbool_rect_bool_weq n x y :
+  Lemma sumbool_rect_bool_weq (n : nat) (x y : word n) :
     sumbool_rect (fun _ => bool) (fun _ => true) (fun _ => false) (@weq n x y) = weqb x y.
   Proof. rewrite sumbool_rect_weq; destruct (weqb x y); trivial. Qed.
 
-  Lemma unsigned_eqb n x y : Z.eqb (Z.of_N (wordToN x)) (Z.of_N (wordToN y)) = @weqb n x y.
+  Lemma unsigned_eqb (n : nat) (x y : word n) : Z.eqb (Z.of_N (wordToN x)) (Z.of_N (wordToN y)) = weqb x y.
   Proof. rewrite !Z_of_wordToN; symmetry; apply weqb_eqb. Qed.
 
   Lemma unsigned_split1_mod:
-    forall n m w,
+    forall n m (w : word (n + m)),
       Z.of_N (wordToN (split1 n m w)) = Z.of_N (wordToN w) mod (2 ^ (Z.of_nat n)).
-  Proof. intros; rewrite !Z_of_wordToN; apply unsigned_split1. Qed.
+  Proof. intros; rewrite !Z_of_wordToN, <- Zpow2_eqn; apply unsigned_split1. Qed.
 
 End KamiWordFacts.
 
@@ -191,24 +161,24 @@ Section WithWidth.
 
   Definition kword: Type := Kami.Lib.Word.word sz.
   Definition kunsigned(x: kword): Z := Zmod.unsigned x.
-  Definition ksigned: kword -> Z := @wordToZ sz.
-  Definition kofZ: Z -> kword := ZToWord sz.
+  Definition ksigned: kword -> Z := @Zmod.signed _.
+  Definition kofZ: Z -> kword := fun z => ZToWord sz z.
 
-  (* The bridge to Kami's legacy [wordToN]-spelled lemma family. *)
+  (* The bridge to Kami's [wordToN]-spelled lemma family. *)
   Lemma kunsigned_wordToN: forall x: kword, kunsigned x = Z.of_N (wordToN x).
   Proof. intros; symmetry; apply Z_of_wordToN. Qed.
 
   (** The word instance is coqutil's [Naive.word], field for field: this record
       is [Naive.word width] with its [rep] spelled [Kami.Lib.Word.word (Z.to_nat
-      width)] instead of [bits width].  The two are convertible whenever [width]
-      is a numeral (every use is at 32 or 8), so [KamiWord.word 32 = Naive.word
-      32] holds by [eq_refl], and every field agrees with what the Kami
-      processor computes ([Zmod.udiv x 0 = 2^width-1], [Zmod.umod x 0 = x], and
-      Naive masks shift amounts with [mod width] at power-of-two widths, which
-      is RISC-V's convention; see kami-stage3-report.md for the field-by-field
-      check).  Spelling [rep] the Kami way matters: Kami's API is indexed by a
-      [nat] size, and unification cannot recover [?sz] from [bits width], so
-      [wordToN a] for [a : word] would need an annotation at every use. *)
+      width)] instead of [bits width].  The two are convertible ([Zpow2 n] is
+      [2 ^ Z.of_nat n] by delta), so [KamiWord.word 32 = Naive.word 32] holds
+      by [eq_refl], and every field agrees with what the Kami processor
+      computes ([Zmod.udiv x 0 = 2^width-1], [Zmod.umod x 0 = x], and Naive
+      masks shift amounts with [mod width] at power-of-two widths, which is
+      RISC-V's convention).  Spelling [rep] the Kami way matters: Kami's API is
+      indexed by a [nat] size, and unification cannot recover [?sz] from
+      [bits width], so [wordToN a] for [a : word] would need an annotation at
+      every use. *)
   Local Notation Nv := (Naive.word (Z.of_nat sz)).
   Definition word : word.word width := {|
     rep := kword;
@@ -246,7 +216,7 @@ Section WithWidth.
   Lemma ok : word.ok word.
   Proof using width_nonneg.
     assert (Hw: Z.of_nat sz = width) by (apply Znat.Z2Nat.id; blia).
-    cbv [word kword Kami.Lib.Word.word].
+    cbv [word kword Kami.Lib.Word.word Zpow2].
     rewrite Hw.
     exact (Naive.ok width width_nonneg).
   Qed.
@@ -287,15 +257,14 @@ Section Spelling.
     @word.ltu width W x y = if wlt_dec x y then true else false.
   Proof.
     change (@word.ltu width W x y) with (Z.ltb (Zmod.unsigned x) (Zmod.unsigned y)).
-    pose proof (@Z_of_wordToN _ x); pose proof (@Z_of_wordToN _ y).
-    case (wlt_dec x y) as [Hlt|Hlt]; cbv [wlt] in Hlt;
+    case (wlt_dec x y) as [Hlt|Hlt];
       destruct (Z.ltb_spec (Zmod.unsigned x) (Zmod.unsigned y)); trivial; exfalso; blia.
   Qed.
   Lemma lts_eq (x y: kword width):
     @word.lts width W x y = if wslt_dec x y then true else false.
   Proof.
     change (@word.lts width W x y) with (Z.ltb (wordToZ x) (wordToZ y)).
-    case (wslt_dec x y) as [Hlt|Hlt]; cbv [wslt] in Hlt;
+    case (wslt_dec x y) as [Hlt|Hlt];
       destruct (Z.ltb_spec (wordToZ x) (wordToZ y)); trivial; exfalso; blia.
   Qed.
 End Spelling.
