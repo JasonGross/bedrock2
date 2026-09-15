@@ -1,11 +1,10 @@
 Require Import Coq.ZArith.ZArith. Local Open Scope Z_scope.
 Require Import bedrock2.ZnWords.
-Require Import coqutil.Word.Interface.
+Require Import coqutil.Word.Bitwidth.
 Require Import Coq.Lists.List. Import ListNotations.
 Require Import coqutil.Datatypes.Inhabited.
 Require Import bedrock2.WordNotations. Local Open Scope word_scope.
 
-Local Hint Mode Word.Interface.word - : typeclass_instances.
 Notation len := List.length.
 Coercion Z.of_nat : nat >-> Z.
 
@@ -16,23 +15,23 @@ Fixpoint ands(Ps: list Prop): Prop :=
   end.
 
 Section ZnWordTests.
-  Context {word: word.word 32} {word_ok: word.ok word}.
+  Local Notation word := (bits 32).
 
   Goal forall (left0 right : word) (xs : list word),
-    word.unsigned (word.sub right left0) = 8 * Z.of_nat (Datatypes.length xs) ->
+    Zmod.unsigned (Zmod.sub right left0) = 8 * Z.of_nat (Datatypes.length xs) ->
     forall (x : list word) (x1 x2 : word),
-    word.unsigned (word.sub x2 x1) = 8 * Z.of_nat (Datatypes.length x) ->
-    word.unsigned (word.sub x2 x1) <> 0 ->
-    word.unsigned
-      (word.sub x2
-         (word.add
-            (word.add x1 (word.slu (word.sru (word.sub x2 x1) (word.of_Z 4)) (word.of_Z 3)))
-            (word.of_Z 8))) =
+    Zmod.unsigned (Zmod.sub x2 x1) = 8 * Z.of_nat (Datatypes.length x) ->
+    Zmod.unsigned (Zmod.sub x2 x1) <> 0 ->
+    Zmod.unsigned
+      (Zmod.sub x2
+         (Zmod.add
+            (Zmod.add x1 (Zmod.slu (Zmod.sru (Zmod.sub x2 x1) 4) 3))
+            (bits.of_Z 32 8))) =
     8 *
     Z.of_nat
       (Datatypes.length x -
-       S (Z.to_nat (word.unsigned (word.sub (word.add x1 (word.slu (word.sru (word.sub x2 x1)
-           (word.of_Z 4)) (word.of_Z 3))) x1) / word.unsigned (word.of_Z 8)))).
+       S (Z.to_nat (Zmod.unsigned (Zmod.sub (Zmod.add x1 (Zmod.slu (Zmod.sru (Zmod.sub x2 x1)
+           4) 3)) x1) / Zmod.unsigned (bits.of_Z 32 8)))).
   Proof.
     intros. ZnWords.
   Qed.
@@ -59,9 +58,9 @@ Section ZnWordTests.
   Qed.
 
   Goal forall (a a' SZ: word) (T: Type) (f: T -> nat) (vs1: T),
-      word.unsigned (word.sub a' a) mod word.unsigned SZ = 0 ->
-      f vs1 = Z.to_nat (word.unsigned (word.sub a' a) / word.unsigned SZ) ->
-      word.add a (word.of_Z (word.unsigned (word.of_Z (word := word) (word.unsigned SZ))
+      Zmod.unsigned (Zmod.sub a' a) mod Zmod.unsigned SZ = 0 ->
+      f vs1 = Z.to_nat (Zmod.unsigned (Zmod.sub a' a) / Zmod.unsigned SZ) ->
+      Zmod.add a (bits.of_Z 32 (Zmod.unsigned (bits.of_Z 32 (Zmod.unsigned SZ))
                              * Z.of_nat (f vs1))) = a'.
   Proof.
     intros.
