@@ -18,6 +18,34 @@ Require Import bedrock2.Syntax bedrock2.Semantics.
 Require Import bedrock2.Lift1Prop.
 Require Import bedrock2.Map.Separation bedrock2.Map.SeparationLogic bedrock2.Array.
 Require Import bedrock2.unzify.
+Require Import bedrock2.ZnWords coqutil.Word.ZifyBitsAll.
+
+(* ===== MEASUREMENT HARNESS for the mit-plv/coqutil#56 study (not for merge) =====
+   [lv_zlia] stands for the inline [zify_goal; xlia zchecker] side-condition
+   solver.  Each call runs the legacy solver, [unzify; ZnWords_zify] and
+   [unzify; lia], logs outcomes and times, and closes with the legacy solver
+   when it succeeds (so files behave as before). *)
+Ltac lv_zlia_legacy := zify_goal; xlia zchecker.
+Ltac lv_measure legacy :=
+  let o := match goal with
+           | _ => let __ := match goal with _ => assert_succeeds (idtac; time "OLD" (solve [legacy])) end in constr:(true)
+           | _ => constr:(false)
+           end in
+  let z := match goal with
+           | _ => let __ := match goal with _ => assert_succeeds (idtac; time "ZIFY" (solve [timeout 60 (unzify; ZnWords_zify)])) end in constr:(true)
+           | _ => constr:(false)
+           end in
+  let l := match goal with
+           | _ => let __ := match goal with _ => assert_succeeds (idtac; time "LIA" (solve [timeout 60 (unzify; zify_bits_pre; zify; zify_bits_post; lia)])) end in constr:(true)
+           | _ => constr:(false)
+           end in
+  idtac "LVZ old=" o "zify=" z "lia=" l;
+  (* always behave like the legacy solver, so that proof scripts take the same path *)
+  lazymatch o with
+  | true => legacy
+  | false => fail "lv_measure: legacy solver fails"
+  end.
+Ltac lv_zlia := lv_measure lv_zlia_legacy.
 Require Import bedrock2.WordPushDownLemmas.
 Require Import bedrock2.Scalars.
 Require Import bedrock2.TacticError. Local Open Scope Z_scope.
@@ -102,11 +130,12 @@ Inductive stepping: Type :=.
 Definition ready{P: Prop} := P.
 
 (* heapletwise- and word-aware lia, successor of ZnWords *)
-Ltac hwlia := zify_hyps; puri_simpli_zify_hyps true; zify_goal; xlia zchecker.
+Ltac hwlia_legacy := zify_hyps; puri_simpli_zify_hyps true; zify_goal; xlia zchecker.
+Ltac hwlia := lv_measure hwlia_legacy.
 
-Ltac2 Set bottom_up_simpl_sidecond_hook := fun _ => ltac1:(zify_goal; xlia zchecker).
+Ltac2 Set bottom_up_simpl_sidecond_hook := fun _ => ltac1:(lv_zlia).
 
-Ltac word_lia_hook_for_split_merge ::= zify_goal; xlia zchecker.
+Ltac word_lia_hook_for_split_merge ::= lv_zlia.
 
 Ltac intros_until_trace :=
   repeat lazymatch goal with
@@ -858,7 +887,7 @@ Ltac conclusion_shape_based_step logger :=
   | |- bool_expr_branches _ _ _ _ =>
       logger ltac:(fun _ => idtac "Splitting bool_expr_branches");
       eapply BoolSpec_expr_branches;
-      [ first [ eapply contradictory_branch; zify_goal; xlia zchecker
+      [ first [ eapply contradictory_branch; lv_zlia
               | intro ] .. | ]
   | |- then_branch_marker ?G =>
       logger ltac:(fun _ => idtac "Starting `then` branch");
@@ -1007,7 +1036,7 @@ Ltac sidecond_step logger := first
         end;
         logger ltac:(fun _ => idtac "eexists")
       | (* tried first because it also solves some goals of shape (_ = _) and (_ /\ _) *)
-        zify_goal; xlia zchecker;
+        lv_zlia;
         logger ltac:(fun _ => idtac "zify_goal; xlia zchecker")
       | safe_implication_step;
         logger ltac:(fun _ => idtac "safe_implication_step")
@@ -1189,7 +1218,7 @@ Ltac predicates_safe_to_cancel hypPred conclPred :=
       | array ?elem ?n2 ?vs2 => lazymatch hypPred with
                                 | array elem ?n1 ?vs1 =>
                                     assert_succeeds (idtac; assert (n1 = n2)
-                                                       by (zify_goal; xlia zchecker));
+                                                       by lv_zlia);
                                     tryif is_evar vs2 then unify vs1 vs2 else idtac
                                 end
       | sepapps nil => lazymatch hypPred with
@@ -1217,7 +1246,7 @@ Ltac is_safe_to_cancel hypClause goalClause :=
       | ?pred2 ?addr2 =>
           first [ constr_eq addr1 addr2
                 | assert_succeeds (idtac; assert (addr1 = addr2)
-                                     by (zify_goal; xlia zchecker)) ];
+                                     by lv_zlia) ];
           predicates_safe_to_cancel pred1 pred2
       end
   end.

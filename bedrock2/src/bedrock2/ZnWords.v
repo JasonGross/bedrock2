@@ -227,3 +227,40 @@ Ltac ZnWords_zify_pre :=
   unfold_Z_nat_consts.
 
 Ltac ZnWords_zify := ZnWords_zify_pre; bits_lia.
+
+(* ===== MEASUREMENT HARNESS for the mit-plv/coqutil#56 study (not for merge) =====
+   Every ZnWords call (also through ZnWordsL / listZnWords) runs the legacy
+   ZnWords, ZnWords_zify and plain lia, logs the three outcomes with their times,
+   dumps the pruned goal when only the legacy tactic succeeds, and then closes the
+   goal with the legacy tactic when it succeeds (so files compile as before). *)
+Set Printing Depth 100000.
+
+Ltac ZnWords_legacy := ZnWords_pre; better_lia.
+
+Ltac ZnWords_dump_goal :=
+  try (ZnWords_zify_pre;
+       repeat match goal with x: _ |- _ => revert x end;
+       match goal with |- ?G => idtac "ZNW_FAIL_GOAL"; idtac G; idtac "ZNW_END" end;
+       fail).
+
+Ltac ZnWords_measure :=
+  let o := match goal with
+           | _ => let __ := match goal with _ => assert_succeeds (idtac; time "OLD" (solve [ZnWords_legacy])) end in constr:(true)
+           | _ => constr:(false)
+           end in
+  let z := match goal with
+           | _ => let __ := match goal with _ => assert_succeeds (idtac; time "ZIFY" (solve [timeout 120 ZnWords_zify])) end in constr:(true)
+           | _ => constr:(false)
+           end in
+  let l := match goal with
+           | _ => let __ := match goal with _ => assert_succeeds (idtac; time "LIA" (solve [timeout 120 (zify_bits_pre; zify; zify_bits_post; lia)])) end in constr:(true)
+           | _ => constr:(false)
+           end in
+  idtac "ZNW old=" o "zify=" z "lia=" l;
+  (* always behave like the legacy tactic, so that proof scripts take the same path *)
+  lazymatch o with
+  | true => lazymatch z with true => idtac | false => ZnWords_dump_goal end; ZnWords_legacy
+  | false => ZnWords_legacy
+  end.
+
+Ltac ZnWords ::= ZnWords_measure.

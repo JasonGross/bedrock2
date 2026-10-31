@@ -8,9 +8,9 @@ Load LiveVerif.
 Ltac step_hook ::=
   lazymatch goal with
   | |- ?A \/ ?B =>
-      tryif (assert_succeeds (assert (~ A) by (zify_goal; xlia zchecker)))
+      tryif (assert_succeeds (assert (~ A) by (lv_zlia)))
       then right else
-      tryif (assert_succeeds (assert (~ B) by (zify_goal; xlia zchecker)))
+      tryif (assert_succeeds (assert (~ B) by (lv_zlia)))
       then left else fail
   end.
 
