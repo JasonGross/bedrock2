@@ -40,6 +40,21 @@ Ltac lv_measure legacy :=
            | _ => constr:(false)
            end in
   idtac "LVZ old=" o "zify=" z "lia=" l;
+  lazymatch o with
+  | true => lazymatch z with
+            | false =>
+                (* dump the pruned goal for the failure study *)
+                match goal with |- ?G => idtac "LVZ_GOAL"; idtac G end;
+                first [ try (unzify; ZnWords_zify_pre;
+                             repeat match goal with x: _ |- _ => revert x end;
+                             match goal with |- ?G => idtac "LVZ_FAIL_GOAL"; idtac G; idtac "LVZ_END" end;
+                             fail)
+                      | idtac ];
+                tryif (assert_succeeds (idtac; unzify; ZnWords_zify_pre)) then idtac else idtac "LVZ_FAIL_PRE"
+            | true => idtac
+            end
+  | false => idtac
+  end;
   (* always behave like the legacy solver, so that proof scripts take the same path *)
   lazymatch o with
   | true => legacy

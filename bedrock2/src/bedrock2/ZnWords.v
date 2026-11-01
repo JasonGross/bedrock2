@@ -226,7 +226,62 @@ Ltac ZnWords_zify_pre :=
          end;
   unfold_Z_nat_consts.
 
-Ltac ZnWords_zify := ZnWords_zify_pre; bits_lia.
+(* Facts that unzify poses and zify cannot derive: lengths of ZList operations
+   (as case disjunctions, which lia splits) and word-valued [if]. *)
+Require Import coqutil.Datatypes.ZList.
+Section ZListFacts.
+  Context {A : Type}.
+  Lemma len_upto_eq (l : list A) i :
+    Z.of_nat (List.length (List.upto i l)) = Z.min (Z.max i 0) (Z.of_nat (List.length l)).
+  Proof. cbv [List.upto]. rewrite List.firstn_length. lia. Qed.
+  Lemma len_from_eq (l : list A) i :
+    Z.of_nat (List.length (List.from i l)) = Z.of_nat (List.length l) - Z.min (Z.max i 0) (Z.of_nat (List.length l)).
+  Proof. cbv [List.from]. rewrite List.length_skipn. lia. Qed.
+  Lemma len_repeatz_eq (x : A) n : Z.of_nat (List.length (List.repeatz x n)) = Z.max n 0.
+  Proof. cbv [List.repeatz]. rewrite List.repeat_length. lia. Qed.
+  Lemma len_set_cases (l : list A) i x :
+    (0 <= i < Z.of_nat (List.length l) /\ Z.of_nat (List.length (List.set l i x)) = Z.of_nat (List.length l)) \/ ~ (0 <= i < Z.of_nat (List.length l)).
+  Proof. destruct (Z_le_dec 0 i), (Z_lt_dec i (Z.of_nat (List.length l))); auto using List.len_set; tauto. Qed.
+End ZListFacts.
+
+Lemma if_cases {T} (c : bool) (a b : T) :
+  (c = true /\ (if c then a else b) = a) \/ (c = false /\ (if c then a else b) = b).
+Proof. destruct c; auto. Qed.
+
+Ltac ZnWords_zify_pose pf :=
+  let t := type of pf in
+  lazymatch goal with
+  | H : t |- _ => fail
+  | _ => pose proof pf
+  end.
+
+Ltac ZnWords_zify_if_cases c a b :=
+  lazymatch type of a with
+  | Z => ZnWords_zify_pose (if_cases c a b)
+  | Zmod _ => ZnWords_zify_pose (if_cases c a b)
+  end.
+
+Ltac ZnWords_zify_facts :=
+  repeat match goal with
+         | |- context [Z.of_nat (List.length (List.upto ?i ?l))] => ZnWords_zify_pose (len_upto_eq l i)
+         | H : context [Z.of_nat (List.length (List.upto ?i ?l))] |- _ => ZnWords_zify_pose (len_upto_eq l i)
+         | |- context [Z.of_nat (List.length (List.from ?i ?l))] => ZnWords_zify_pose (len_from_eq l i)
+         | H : context [Z.of_nat (List.length (List.from ?i ?l))] |- _ => ZnWords_zify_pose (len_from_eq l i)
+         | |- context [Z.of_nat (List.length (List.set ?l ?i ?x))] => ZnWords_zify_pose (len_set_cases l i x)
+         | H : context [Z.of_nat (List.length (List.set ?l ?i ?x))] |- _ => ZnWords_zify_pose (len_set_cases l i x)
+         | |- context [Z.of_nat (List.length (List.repeatz ?x ?n))] => ZnWords_zify_pose (len_repeatz_eq x n)
+         | H : context [Z.of_nat (List.length (List.repeatz ?x ?n))] |- _ => ZnWords_zify_pose (len_repeatz_eq x n)
+         | |- context [Z.of_nat (List.length (?l1 ++ ?l2))] => ZnWords_zify_pose (List.len_app l1 l2)
+         | H : context [Z.of_nat (List.length (?l1 ++ ?l2))] |- _ => ZnWords_zify_pose (List.len_app l1 l2)
+         | |- context [Z.of_nat (List.length (?a :: ?l))] => ZnWords_zify_pose (List.len_cons a l)
+         | H : context [Z.of_nat (List.length (?a :: ?l))] |- _ => ZnWords_zify_pose (List.len_cons a l)
+         | |- context [Z.of_nat (List.length (@nil ?A))] => ZnWords_zify_pose (@List.len_nil A)
+         | H : context [Z.of_nat (List.length (@nil ?A))] |- _ => ZnWords_zify_pose (@List.len_nil A)
+         | |- context [if ?c then ?a else ?b] => ZnWords_zify_if_cases c a b
+         | H : context [if ?c then ?a else ?b] |- _ => ZnWords_zify_if_cases c a b
+         end.
+
+Ltac ZnWords_zify := ZnWords_zify_pre; ZnWords_zify_facts; bits_lia.
 
 (* ===== MEASUREMENT HARNESS for the mit-plv/coqutil#56 study (not for merge) =====
    Every ZnWords call (also through ZnWordsL / listZnWords) runs the legacy
