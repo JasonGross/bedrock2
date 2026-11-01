@@ -215,9 +215,12 @@ Ltac is_lia_word P :=
   | _ => is_lia P
   end.
 
+(* No goal-shape guard: zify handles the propositional structure itself, and a
+   goal with evars or without arithmetic can still be closed by a
+   contradiction in the hypotheses (second attempt), as unzify's zify_goal. *)
 Ltac ZnWords_zify_pre :=
   lazymatch goal with
-  | |- ?G => is_lia_word G; tryif has_evar G then exfalso else idtac
+  | |- ?G => tryif has_evar G then exfalso else idtac
   end;
   subst;
   repeat match goal with
@@ -281,7 +284,8 @@ Ltac ZnWords_zify_facts :=
          | H : context [if ?c then ?a else ?b] |- _ => ZnWords_zify_if_cases c a b
          end.
 
-Ltac ZnWords_zify := ZnWords_zify_pre; ZnWords_zify_facts; bits_lia.
+Ltac ZnWords_zify :=
+  ZnWords_zify_pre; ZnWords_zify_facts; first [ bits_lia | exfalso; bits_lia ].
 
 (* ===== MEASUREMENT HARNESS for the mit-plv/coqutil#56 study (not for merge) =====
    Every ZnWords call (also through ZnWordsL / listZnWords) runs the legacy
