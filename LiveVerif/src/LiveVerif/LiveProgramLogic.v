@@ -28,18 +28,14 @@ Require Import bedrock2.ZnWords coqutil.Word.ZifyBitsAll.
 Ltac lv_zlia_legacy := zify_goal; xlia zchecker.
 Ltac lv_measure legacy :=
   let o := match goal with
-           | _ => let __ := match goal with _ => assert_succeeds (idtac; time "OLD" (solve [legacy])) end in constr:(true)
+           | _ => let __ := match goal with _ => assert_succeeds (idtac; time "OLD" (solve [timeout 15 legacy])) end in constr:(true)
            | _ => constr:(false)
            end in
   let z := match goal with
-           | _ => let __ := match goal with _ => assert_succeeds (idtac; time "ZIFY" (solve [timeout 60 (unzify; ZnWords_zify)])) end in constr:(true)
+           | _ => let __ := match goal with _ => assert_succeeds (idtac; time "ZIFY" (solve [timeout 15 (unzify; ZnWords_zify)])) end in constr:(true)
            | _ => constr:(false)
            end in
-  let l := match goal with
-           | _ => let __ := match goal with _ => assert_succeeds (idtac; time "LIA" (solve [timeout 60 (unzify; zify_bits_pre; zify; zify_bits_post; lia)])) end in constr:(true)
-           | _ => constr:(false)
-           end in
-  idtac "LVZ old=" o "zify=" z "lia=" l;
+  idtac "LVZ old=" o "zify=" z;
   lazymatch o with
   | true => lazymatch z with
             | false =>

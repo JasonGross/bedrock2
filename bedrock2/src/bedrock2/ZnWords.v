@@ -304,18 +304,16 @@ Ltac ZnWords_dump_goal :=
 
 Ltac ZnWords_measure :=
   let o := match goal with
-           | _ => let __ := match goal with _ => assert_succeeds (idtac; time "OLD" (solve [ZnWords_legacy])) end in constr:(true)
+           | _ => let __ := match goal with _ => assert_succeeds (idtac; time "OLD" (solve [timeout 15 ZnWords_legacy])) end in constr:(true)
            | _ => constr:(false)
            end in
+  (* 15 s: anything slower is already a dramatic slowdown; it is logged as a
+     failure with its time *)
   let z := match goal with
-           | _ => let __ := match goal with _ => assert_succeeds (idtac; time "ZIFY" (solve [timeout 120 ZnWords_zify])) end in constr:(true)
+           | _ => let __ := match goal with _ => assert_succeeds (idtac; time "ZIFY" (solve [timeout 15 ZnWords_zify])) end in constr:(true)
            | _ => constr:(false)
            end in
-  let l := match goal with
-           | _ => let __ := match goal with _ => assert_succeeds (idtac; time "LIA" (solve [timeout 120 (zify_bits_pre; zify; zify_bits_post; lia)])) end in constr:(true)
-           | _ => constr:(false)
-           end in
-  idtac "ZNW old=" o "zify=" z "lia=" l;
+  idtac "ZNW old=" o "zify=" z;
   (* always behave like the legacy tactic, so that proof scripts take the same path *)
   lazymatch o with
   | true => lazymatch z with true => idtac | false => ZnWords_dump_goal end; ZnWords_legacy
