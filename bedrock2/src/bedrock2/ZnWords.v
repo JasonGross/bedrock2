@@ -227,3 +227,8 @@ Ltac ZnWords_zify_pre :=
   unfold_Z_nat_consts.
 
 Ltac ZnWords_zify := ZnWords_zify_pre; bits_lia.
+
+(* Drop-in: the zify-based tactic first, the rewrite-based one as fallback
+   (3 of 416 bedrock2 goals need it: 2 with an abstract width without a
+   Bitwidth instance in kyberslash.v, 1 nonlinear 64-bit product in full_mul.v). *)
+Ltac ZnWords ::= first [ ZnWords_zify | ZnWords_pre; better_lia ].
