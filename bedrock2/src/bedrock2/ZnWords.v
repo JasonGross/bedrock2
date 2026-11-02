@@ -200,6 +200,9 @@ Ltac ZnWordsL :=
    is the drop-in candidate for [ZnWords]: the same goal guard and context
    pruning, then [bits_lia] instead of the rewrite table + dewordify. *)
 Require Import coqutil.Word.ZifyBitsAll.
+(* The zify instances are scoped by Import: exporting them here makes every
+   file that imports ZnWords word-aware in lia, and leaves the others alone. *)
+Export ZifyBitsAll.Instances.
 
 (* [is_lia] extended with what zify translates: word (dis)equalities, [Zmod.eqb]. *)
 Ltac is_lia_word P :=
@@ -294,4 +297,14 @@ Ltac ZnWords_zify :=
    goals the zify path does not prove (nonlinear word products, an abstract
    width without a Bitwidth instance): see the call sites that name it. *)
 Ltac ZnWords_legacy := ZnWords_pre; better_lia.
-Ltac ZnWords ::= ZnWords_zify.
+(* The instances are active only in files that import them (ZnWords exports
+   them, so importing ZnWords is enough).  A caller that only has ZnWords through
+   a transitive Require gets the rewrite-based tactic.  The probe is a 32-bit
+   range goal, a few milliseconds. *)
+Ltac zify_bits_instances_active :=
+  assert_succeeds (idtac; assert (forall x : bits 32, Zmod.unsigned x < 2 ^ 32)
+                            by (intros; zify_bits_pre; zify; zify_bits_post; lia)).
+Ltac ZnWords ::=
+  tryif zify_bits_instances_active
+  then (idtac "ZNW-scope active"; ZnWords_zify)
+  else (idtac "ZNW-scope inactive"; ZnWords_legacy).
